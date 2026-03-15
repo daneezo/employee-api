@@ -64,6 +64,13 @@ module Api
         }
       ]
 
+      # Queue a background job to log this request.
+      # perform_later enqueues the job into Redis via Sidekiq — it does NOT run
+      # the job right now. The Sidekiq worker process picks it up asynchronously.
+      # This keeps our API response fast because we're not waiting for the logging
+      # to complete before sending the response back to the client.
+      EmployeeRequestJob.perform_later(Time.current.to_s)
+
       # render json: converts the Ruby array of hashes into a JSON response
       # Rails automatically sets the Content-Type header to application/json
       render json: employees

@@ -3,7 +3,10 @@ require_relative "boot"
 require "rails"
 # Pick the frameworks you want:
 require "active_model/railtie"
-# require "active_job/railtie"
+# Active Job is Rails' built-in framework for declaring background jobs.
+# Sidekiq plugs into Active Job as a "queue adapter" — meaning you write
+# standard Rails jobs and Sidekiq handles running them in the background.
+require "active_job/railtie"
 require "active_record/railtie"
 # require "active_storage/engine"
 require "action_controller/railtie"
@@ -40,5 +43,11 @@ module EmployeeApi
     # Middleware like session, flash, cookies can be added back manually.
     # Skip views, helpers and assets when generating a new resource.
     config.api_only = true
+
+    # Tell Active Job to use Sidekiq as the queue adapter.
+    # Without this, Rails would use the :async adapter (in-memory, lost on restart).
+    # Sidekiq persists jobs in Redis, so they survive server restarts and can be
+    # retried automatically if they fail.
+    config.active_job.queue_adapter = :sidekiq
   end
 end
